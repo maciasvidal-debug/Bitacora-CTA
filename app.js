@@ -214,8 +214,25 @@ selectActividad.addEventListener('change', () => {
 });
 
 // ==========================================
-// 5. GUARDAR Y EXPORTAR
+// 5. SEGURIDAD Y EXPORTACIÓN
 // ==========================================
+function escaparCSV(valor) {
+    if (valor === null || valor === undefined) return "";
+    let texto = String(valor);
+
+    // Mitigación de CSV Injection (Formula Injection)
+    if (["=", "+", "-", "@"].some(char => texto.startsWith(char))) {
+        texto = "'" + texto;
+    }
+
+    // Escapado estándar de CSV para comas, comillas y saltos de línea
+    if (texto.includes(",") || texto.includes('"') || texto.includes("\n") || texto.includes("\r")) {
+        texto = '"' + texto.replace(/"/g, '""') + '"';
+    }
+
+    return texto;
+}
+
 const formulario = document.getElementById('formularioTimesheet');
 const botonExportar = document.getElementById('btnExportar');
 const cuerpoTabla = document.querySelector('#tablaBitacora tbody');
@@ -262,7 +279,7 @@ function actualizarTablaBitacora() {
 formulario.addEventListener('submit', evento => {
     evento.preventDefault();
     let descripcionFinal = selectCategoria.value === "otra" || selectActividad.value === "Otra" 
-        ? textareaDescripcion.value.replace(/,/g, " ") : selectActividad.value;
+        ? textareaDescripcion.value : selectActividad.value;
 
     const datosActividad = {
         fecha: document.getElementById('fecha').value,
@@ -286,7 +303,7 @@ botonExportar.addEventListener('click', () => {
     if (listaActividades.length === 0) { mostrarToast("⚠️ No hay datos para exportar."); return; }
     let contenidoCSV = "Fecha,Protocolo,Categoria,Descripcion,Horas\n";
     listaActividades.forEach(act => {
-        contenidoCSV += `${act.fecha},${act.protocolo},${act.categoria},${act.descripcion},${act.horas}\n`;
+        contenidoCSV += `${escaparCSV(act.fecha)},${escaparCSV(act.protocolo)},${escaparCSV(act.categoria)},${escaparCSV(act.descripcion)},${escaparCSV(act.horas)}\n`;
     });
     const blob = new Blob([contenidoCSV], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
