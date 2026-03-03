@@ -128,7 +128,7 @@ const opcionesPorCategoria = {
         "Visita de Cierre (COV)", 
         "Preparación/Atención de Auditorías o Inspecciones",
         "Seguimiento de Hallazgos (Action Items)",
-        "Verificación / Revisión de documentos (SDV/SDR"),
+        "Verificación / Revisión de documentos (SDV/SDR)",
         "Otra"
     ],
     documentacion: [
