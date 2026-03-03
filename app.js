@@ -216,6 +216,23 @@ selectActividad.addEventListener('change', () => {
 // ==========================================
 // 5. GUARDAR Y EXPORTAR
 // ==========================================
+function escaparCSV(valor) {
+    if (valor === null || valor === undefined) return "";
+    let texto = String(valor);
+
+    // Mitigación de CSV Injection (Formula Injection)
+    if (["=", "+", "-", "@", "\t", "\r"].some(char => texto.startsWith(char))) {
+        texto = "'" + texto;
+    }
+
+    // Escapado estándar de CSV para comas, comillas y saltos de línea
+    if (texto.includes(",") || texto.includes('"') || texto.includes("\n") || texto.includes("\r")) {
+        texto = '"' + texto.replace(/"/g, '""') + '"';
+    }
+
+    return texto;
+}
+
 const formulario = document.getElementById('formularioTimesheet');
 const botonExportar = document.getElementById('btnExportar');
 const cuerpoTabla = document.querySelector('#tablaBitacora tbody');
@@ -284,10 +301,11 @@ formulario.addEventListener('submit', evento => {
 
 botonExportar.addEventListener('click', () => {
     if (listaActividades.length === 0) { mostrarToast("⚠️ No hay datos para exportar."); return; }
-    let contenidoCSV = "Fecha,Protocolo,Categoria,Descripcion,Horas\n";
-    listaActividades.forEach(act => {
-        contenidoCSV += `${act.fecha},${act.protocolo},${act.categoria},${act.descripcion},${act.horas}\n`;
+    const headers = "Fecha,Protocolo,Categoria,Descripcion,Horas";
+    const rows = listaActividades.map(act => {
+        return `${escaparCSV(act.fecha)},${escaparCSV(act.protocolo)},${escaparCSV(act.categoria)},${escaparCSV(act.descripcion)},${escaparCSV(act.horas)}`;
     });
+    const contenidoCSV = [headers].concat(rows).join("\n") + "\n";
     const blob = new Blob([contenidoCSV], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const enlace = document.createElement("a");
