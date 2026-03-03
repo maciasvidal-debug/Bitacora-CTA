@@ -303,9 +303,6 @@ botonExportar.addEventListener('click', () => {
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-            .then(registro => {
-                console.log('✅ Service Worker registrado con éxito. App lista para offline.', registro.scope);
-            })
             .catch(error => {
                 console.error('⚠️ Error al registrar el Service Worker:', error);
             });
