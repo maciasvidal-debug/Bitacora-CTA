@@ -73,10 +73,16 @@ function mostrarToast(mensaje) {
     toast.className = 'toast';
     toast.textContent = mensaje;
     contenedor.appendChild(toast);
-    setTimeout(() => { toast.classList.add('oculto'); setTimeout(() => toast.remove(), 500); }, 2500);
+    setTimeout(() => {
+        toast.classList.add('oculto');
+        setTimeout(() => toast.remove(), 500);
+    }, 2500);
 }
 
-let intervaloReloj; let tiempoInicio; let tiempoTranscurrido = 0; let cronometroEnMarcha = false;
+let intervaloReloj;
+let tiempoInicio;
+let tiempoTranscurrido = 0;
+let cronometroEnMarcha = false;
 const displayTiempo = document.getElementById('displayTiempo');
 const btnIniciar = document.getElementById('btnIniciar');
 const btnDetener = document.getElementById('btnDetener');
@@ -87,7 +93,8 @@ btnIniciar.addEventListener('click', () => {
     cronometroEnMarcha = true;
     tiempoInicio = Date.now() - tiempoTranscurrido;
     intervaloReloj = setInterval(actualizarReloj, 1000);
-    btnIniciar.disabled = true; btnDetener.disabled = false;
+    btnIniciar.disabled = true;
+    btnDetener.disabled = false;
     mostrarToast("⏳ Cronómetro iniciado");
 });
 
@@ -95,11 +102,13 @@ btnDetener.addEventListener('click', () => {
     if (!cronometroEnMarcha) return;
     cronometroEnMarcha = false;
     clearInterval(intervaloReloj);
-    btnIniciar.disabled = false; btnDetener.disabled = true;
+    btnIniciar.disabled = false;
+    btnDetener.disabled = true;
     const horasDecimales = (tiempoTranscurrido / (1000 * 60 * 60)).toFixed(2);
     inputHoras.value = horasDecimales;
     mostrarToast(`⏱️ Tiempo detenido.`);
-    tiempoTranscurrido = 0; displayTiempo.textContent = "00:00:00";
+    tiempoTranscurrido = 0;
+    displayTiempo.textContent = "00:00:00";
 });
 
 function actualizarReloj() {
@@ -128,7 +137,7 @@ const opcionesPorCategoria = {
         "Visita de Cierre (COV)", 
         "Preparación/Atención de Auditorías o Inspecciones",
         "Seguimiento de Hallazgos (Action Items)",
-        "Verificación / Revisión de documentos (SDV/SDR"),
+        "Verificación / Revisión de documentos (SDV/SDR)",
         "Otra"
     ],
     documentacion: [
@@ -190,26 +199,36 @@ selectCategoria.addEventListener('change', () => {
     selectActividad.innerHTML = '<option value="">-- Selecciona una actividad --</option>';
     
     if (cat === "otra") {
-        selectActividad.classList.add('oculto'); labelActividad.classList.add('oculto');
-        textareaDescripcion.classList.remove('oculto'); labelDescripcion.classList.remove('oculto');
+        selectActividad.classList.add('oculto');
+        labelActividad.classList.add('oculto');
+        textareaDescripcion.classList.remove('oculto');
+        labelDescripcion.classList.remove('oculto');
     } else if (cat !== "") {
         opcionesPorCategoria[cat].forEach(act => {
-            const opt = document.createElement('option'); opt.value = act; opt.textContent = act;
+            const opt = document.createElement('option');
+            opt.value = act;
+            opt.textContent = act;
             selectActividad.appendChild(opt);
         });
-        selectActividad.classList.remove('oculto'); labelActividad.classList.remove('oculto');
-        textareaDescripcion.classList.add('oculto'); labelDescripcion.classList.add('oculto');
+        selectActividad.classList.remove('oculto');
+        labelActividad.classList.remove('oculto');
+        textareaDescripcion.classList.add('oculto');
+        labelDescripcion.classList.add('oculto');
     } else {
-        selectActividad.classList.add('oculto'); labelActividad.classList.add('oculto');
-        textareaDescripcion.classList.add('oculto'); labelDescripcion.classList.add('oculto');
+        selectActividad.classList.add('oculto');
+        labelActividad.classList.add('oculto');
+        textareaDescripcion.classList.add('oculto');
+        labelDescripcion.classList.add('oculto');
     }
 });
 
 selectActividad.addEventListener('change', () => {
     if (selectActividad.value === "Otra") {
-        textareaDescripcion.classList.remove('oculto'); labelDescripcion.classList.remove('oculto');
+        textareaDescripcion.classList.remove('oculto');
+        labelDescripcion.classList.remove('oculto');
     } else {
-        textareaDescripcion.classList.add('oculto'); labelDescripcion.classList.add('oculto');
+        textareaDescripcion.classList.add('oculto');
+        labelDescripcion.classList.add('oculto');
     }
 });
 
@@ -295,12 +314,17 @@ formulario.addEventListener('submit', evento => {
     mostrarToast(`✅ Guardado. Tienes ${listaActividades.length} actividades.`);
     
     formulario.reset();
-    selectActividad.classList.add('oculto'); labelActividad.classList.add('oculto');
-    textareaDescripcion.classList.add('oculto'); labelDescripcion.classList.add('oculto');
+    selectActividad.classList.add('oculto');
+        labelActividad.classList.add('oculto');
+    textareaDescripcion.classList.add('oculto');
+        labelDescripcion.classList.add('oculto');
 });
 
 botonExportar.addEventListener('click', () => {
-    if (listaActividades.length === 0) { mostrarToast("⚠️ No hay datos para exportar."); return; }
+    if (listaActividades.length === 0) {
+        mostrarToast("⚠️ No hay datos para exportar.");
+        return;
+    }
     const headers = "Fecha,Protocolo,Categoria,Descripcion,Horas";
     const rows = listaActividades.map(act => {
         return `${escaparCSV(act.fecha)},${escaparCSV(act.protocolo)},${escaparCSV(act.categoria)},${escaparCSV(act.descripcion)},${escaparCSV(act.horas)}`;
@@ -311,7 +335,9 @@ botonExportar.addEventListener('click', () => {
     const enlace = document.createElement("a");
     enlace.setAttribute("href", url);
     enlace.setAttribute("download", "Timesheet_Clinico.csv");
-    document.body.appendChild(enlace); enlace.click(); document.body.removeChild(enlace);
+    document.body.appendChild(enlace);
+    enlace.click();
+    document.body.removeChild(enlace);
     mostrarToast("📥 Excel descargado.");
 });
 
