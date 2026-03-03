@@ -67,6 +67,11 @@ btnNavBitacora.addEventListener('click', () => cambiarVista('bitacora'));
 // ==========================================
 // 3. TOASTS Y CRONÓMETRO
 // ==========================================
+const MILLISECONDS_PER_SECOND = 1000;
+const SECONDS_PER_MINUTE = 60;
+const MINUTES_PER_HOUR = 60;
+const SECONDS_PER_HOUR = SECONDS_PER_MINUTE * MINUTES_PER_HOUR;
+
 function mostrarToast(mensaje) {
     const contenedor = document.getElementById('toastContainer');
     const toast = document.createElement('div');
@@ -86,7 +91,7 @@ btnIniciar.addEventListener('click', () => {
     if (cronometroEnMarcha) return;
     cronometroEnMarcha = true;
     tiempoInicio = Date.now() - tiempoTranscurrido;
-    intervaloReloj = setInterval(actualizarReloj, 1000);
+    intervaloReloj = setInterval(actualizarReloj, MILLISECONDS_PER_SECOND);
     btnIniciar.disabled = true; btnDetener.disabled = false;
     mostrarToast("⏳ Cronómetro iniciado");
 });
@@ -96,7 +101,7 @@ btnDetener.addEventListener('click', () => {
     cronometroEnMarcha = false;
     clearInterval(intervaloReloj);
     btnIniciar.disabled = false; btnDetener.disabled = true;
-    const horasDecimales = (tiempoTranscurrido / (1000 * 60 * 60)).toFixed(2);
+    const horasDecimales = (tiempoTranscurrido / (MILLISECONDS_PER_SECOND * SECONDS_PER_HOUR)).toFixed(2);
     inputHoras.value = horasDecimales;
     mostrarToast(`⏱️ Tiempo detenido.`);
     tiempoTranscurrido = 0; displayTiempo.textContent = "00:00:00";
@@ -104,10 +109,10 @@ btnDetener.addEventListener('click', () => {
 
 function actualizarReloj() {
     tiempoTranscurrido = Date.now() - tiempoInicio;
-    let totalSegundos = Math.floor(tiempoTranscurrido / 1000);
-    let horas = Math.floor(totalSegundos / 3600);
-    let minutos = Math.floor((totalSegundos % 3600) / 60);
-    let segundos = totalSegundos % 60;
+    let totalSegundos = Math.floor(tiempoTranscurrido / MILLISECONDS_PER_SECOND);
+    let horas = Math.floor(totalSegundos / SECONDS_PER_HOUR);
+    let minutos = Math.floor((totalSegundos % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE);
+    let segundos = totalSegundos % SECONDS_PER_MINUTE;
     displayTiempo.textContent = String(horas).padStart(2, '0') + ":" + String(minutos).padStart(2, '0') + ":" + String(segundos).padStart(2, '0');
 }
 
@@ -128,7 +133,7 @@ const opcionesPorCategoria = {
         "Visita de Cierre (COV)", 
         "Preparación/Atención de Auditorías o Inspecciones",
         "Seguimiento de Hallazgos (Action Items)",
-        "Verificación / Revisión de documentos (SDV/SDR"),
+        "Verificación / Revisión de documentos (SDV/SDR)",
         "Otra"
     ],
     documentacion: [
