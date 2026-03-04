@@ -97,3 +97,99 @@ describe('actualizarReloj', () => {
         expect(displayTiempo.textContent).toBe('10:00:00');
     });
 });
+
+describe('cargarDatosGuardados', () => {
+    let app;
+
+    beforeEach(() => {
+        // Mock IndexedDB setup
+        global.indexedDB = {
+            open: jest.fn().mockReturnValue({
+                onupgradeneeded: null,
+                onsuccess: null,
+                onerror: null
+            })
+        };
+
+        global.navigator.serviceWorker = {
+            register: jest.fn().mockResolvedValue({})
+        };
+
+        document.body.innerHTML = html;
+
+        jest.isolateModules(() => {
+            app = require('./app.js');
+        });
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    test('should correctly populate listaActividades when data exists in IndexedDB', () => {
+        const mockActividades = [
+            { categoria: 'monitoreo', descripcion: 'Visita', horas: 2 },
+            { categoria: 'reuniones', descripcion: 'Interna', horas: 1.5 }
+        ];
+
+        const mockGetAllRequest = { onsuccess: null, result: mockActividades };
+
+        const mockObjectStore = {
+            getAll: jest.fn().mockReturnValue(mockGetAllRequest)
+        };
+
+        const mockTransaction = {
+            objectStore: jest.fn().mockReturnValue(mockObjectStore)
+        };
+
+        const mockDb = {
+            transaction: jest.fn().mockReturnValue(mockTransaction)
+        };
+
+        app.setDb(mockDb);
+
+        // Act
+        app.cargarDatosGuardados();
+
+        // Simulate onsuccess callback
+        mockGetAllRequest.onsuccess();
+
+        // Assert
+        const lista = app.getListaActividades();
+        expect(lista).toHaveLength(2);
+        expect(lista).toEqual(mockActividades);
+
+        // Ensure transaction and objectStore were called with correct parameters
+        expect(mockDb.transaction).toHaveBeenCalledWith(["actividades"], "readonly");
+        expect(mockTransaction.objectStore).toHaveBeenCalledWith("actividades");
+    });
+
+    test('should populate empty listaActividades when no data exists in IndexedDB', () => {
+        const mockGetAllRequest = { onsuccess: null, result: [] };
+
+        const mockObjectStore = {
+            getAll: jest.fn().mockReturnValue(mockGetAllRequest)
+        };
+
+        const mockTransaction = {
+            objectStore: jest.fn().mockReturnValue(mockObjectStore)
+        };
+
+        const mockDb = {
+            transaction: jest.fn().mockReturnValue(mockTransaction)
+        };
+
+        app.setDb(mockDb);
+
+        // Act
+        app.cargarDatosGuardados();
+
+        // Simulate onsuccess callback
+        mockGetAllRequest.onsuccess();
+
+        // Assert
+        const lista = app.getListaActividades();
+        expect(lista).toHaveLength(0);
+        expect(lista).toEqual([]);
+    });
+});
