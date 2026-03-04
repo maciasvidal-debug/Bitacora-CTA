@@ -122,65 +122,65 @@ const labelDescripcion = document.getElementById('labelDescripcion');
 
 const opcionesPorCategoria = {
     monitoreo: [
-        "Visita de Selección (PSV)", 
-        "Visita de Inicio (SIV)", 
-        "Visita de Monitoreo Interino (IMV/RMV)", 
-        "Visita de Cierre (COV)", 
+        "Visita de Selección (PSV)",
+        "Visita de Inicio (SIV)",
+        "Visita de Monitoreo Interino (IMV/RMV)",
+        "Visita de Cierre (COV)",
         "Preparación/Atención de Auditorías o Inspecciones",
         "Seguimiento de Hallazgos (Action Items)",
-        "Verificación / Revisión de documentos (SDV/SDR"),
+        "Verificación / Revisión de documentos (SDV/SDR)",
         "Otra"
     ],
     documentacion: [
-        "Actualización de TMF / ISF", 
-        "Control de Versiones y Archivo", 
-        "Gestión de Firmas (DOA, FDA 1572)", 
-        "Revisión de Calidad (QC) de Documentos", 
-        "Manejo de Correspondencia del Estudio", 
+        "Actualización de TMF / ISF",
+        "Control de Versiones y Archivo",
+        "Gestión de Firmas (DOA, FDA 1572)",
+        "Revisión de Calidad (QC) de Documentos",
+        "Manejo de Correspondencia del Estudio",
         "Preparación de Manuales/Checklists",
         "Otra"
     ],
     entrenamiento: [
-        "Entrenamiento en Protocolo / Enmiendas", 
-        "Entrenamiento en Buenas Prácticas Clínicas (GCP)", 
-        "Entrenamiento en Sistemas (EDC, CTMS, eISF)", 
-        "Inducción (Onboarding) de Equipo", 
+        "Entrenamiento en Protocolo / Enmiendas",
+        "Entrenamiento en Buenas Prácticas Clínicas (GCP)",
+        "Entrenamiento en Sistemas (EDC, CTMS, eISF)",
+        "Inducción (Onboarding) de Equipo",
         "Otra"
     ],
     reuniones: [
-        "Reunión de Equipo de Estudio (Interna)", 
-        "Reunión con el Sponsor / CRO", 
-        "Reunión de Investigadores (Investigator Meeting)", 
-        "Reunión con el Sitio Clínico / Proveedores", 
+        "Reunión de Equipo de Estudio (Interna)",
+        "Reunión con el Sponsor / CRO",
+        "Reunión de Investigadores (Investigator Meeting)",
+        "Reunión con el Sitio Clínico / Proveedores",
         "Elaboración de Minutas de Reunión",
         "Otra"
     ],
     coordinacion: [
-        "Pre-Screening y Reclutamiento de Pacientes", 
-        "Proceso de Consentimiento Informado (ICF)", 
-        "Visita de Paciente (Screening/Randomización)", 
-        "Visitas de Seguimiento de Paciente", 
-        "Manejo de Muestras Biológicas (Laboratorio/Envío)", 
-        "Manejo de Droga de Estudio (IP Accountability)", 
+        "Pre-Screening y Reclutamiento de Pacientes",
+        "Proceso de Consentimiento Informado (ICF)",
+        "Visita de Paciente (Screening/Randomización)",
+        "Visitas de Seguimiento de Paciente",
+        "Manejo de Muestras Biológicas (Laboratorio/Envío)",
+        "Manejo de Droga de Estudio (IP Accountability)",
         "Evaluación y Reporte de Eventos Adversos (AE/SAE)",
         "Educación y Retención de Pacientes",
         "Otra"
     ],
     data_entry: [
-        "Ingreso de Datos en eCRF (EDC)", 
-        "Revisión y Resolución de Queries", 
-        "Control de Calidad (QC) de Datos Ingresados", 
-        "Conciliación de Datos (SAEs, Laboratorios)", 
-        "Gestión de Diarios de Pacientes (ePRO/eDiary)", 
+        "Ingreso de Datos en eCRF (EDC)",
+        "Revisión y Resolución de Queries",
+        "Control de Calidad (QC) de Datos Ingresados",
+        "Conciliación de Datos (SAEs, Laboratorios)",
+        "Gestión de Diarios de Pacientes (ePRO/eDiary)",
         "Revisión de Source Documents (Documentos Fuente)",
         "Otra"
     ],
     regulatorio: [
-        "Sometimiento Inicial al Comité de Ética (IRB/IEC)", 
-        "Sometimiento de Enmiendas y Renovaciones Anuales", 
-        "Reporte de Seguridad (SAE/SUSAR) al Comité", 
-        "Sometimiento a Agencia Regulatoria", 
-        "Actualización de Documentos de Investigadores (CVs, Licencias)", 
+        "Sometimiento Inicial al Comité de Ética (IRB/IEC)",
+        "Sometimiento de Enmiendas y Renovaciones Anuales",
+        "Reporte de Seguridad (SAE/SUSAR) al Comité",
+        "Sometimiento a Agencia Regulatoria",
+        "Actualización de Documentos de Investigadores (CVs, Licencias)",
         "Otra"
     ]
 };
@@ -188,7 +188,7 @@ const opcionesPorCategoria = {
 selectCategoria.addEventListener('change', () => {
     const cat = selectCategoria.value;
     selectActividad.innerHTML = '<option value="">-- Selecciona una actividad --</option>';
-    
+
     if (cat === "otra") {
         selectActividad.classList.add('oculto'); labelActividad.classList.add('oculto');
         textareaDescripcion.classList.remove('oculto'); labelDescripcion.classList.remove('oculto');
@@ -216,21 +216,51 @@ selectActividad.addEventListener('change', () => {
 // ==========================================
 // 5. GUARDAR Y EXPORTAR
 // ==========================================
-function escaparCSV(valor) {
-    if (valor === null || valor === undefined) return "";
-    let texto = String(valor);
+const formulario = document.getElementById('formularioTimesheet');
+const botonExportar = document.getElementById('btnExportar');
+const cuerpoTabla = document.querySelector('#tablaBitacora tbody');
 
-    // Mitigación de CSV Injection (Formula Injection)
-    if (["=", "+", "-", "@", "\t", "\r"].some(char => texto.startsWith(char))) {
-        texto = "'" + texto;
+function actualizarTablaBitacora() {
+    cuerpoTabla.innerHTML = "";
+
+    if (listaActividades.length === 0) {
+        // CORRECCIÓN 3: El colspan ahora es 5 porque tenemos 5 columnas
+        cuerpoTabla.innerHTML = "<tr><td colspan='5' style='text-align: center;'>Sin actividades.</td></tr>";
+        return;
     }
 
-    // Escapado estándar de CSV para comas, comillas y saltos de línea
-    if (texto.includes(",") || texto.includes('"') || texto.includes("\n") || texto.includes("\r")) {
-        texto = '"' + texto.replace(/"/g, '""') + '"';
-    }
+    // Un pequeño "diccionario" para que la categoría se vea profesional en la tabla
+    const nombresCategorias = {
+        "monitoreo": "Monitoreo",
+        "documentacion": "Documentación / TMF",
+        "entrenamiento": "Entrenamiento",
+        "reuniones": "Reuniones",
+        "coordinacion": "Coordinación Clínica",
+        "data_entry": "Data Entry",
+        "regulatorio": "Regulatorio",
+        "otra": "Otra"
+    };
 
-    return texto;
+    const fragment = document.createDocumentFragment();
+
+    listaActividades.slice().reverse().forEach(actividad => {
+        const fila = document.createElement('tr');
+
+        // Buscamos el nombre bonito de la categoría, si no lo encuentra, usa el original
+        const nombreCategoria = nombresCategorias[actividad.categoria] || actividad.categoria;
+
+        // CORRECCIÓN 4: Insertamos la celda de la categoría en el orden correcto
+        fila.innerHTML = `
+            <td>${actividad.fecha}</td>
+            <td>${actividad.protocolo || "-"}</td>
+            <td>${nombreCategoria}</td>
+            <td>${actividad.descripcion}</td>
+            <td><strong>${actividad.horas}</strong></td>
+        `;
+        fragment.appendChild(fila);
+    });
+
+    cuerpoTabla.appendChild(fragment);
 }
 
 const formulario = document.getElementById('formularioTimesheet');
