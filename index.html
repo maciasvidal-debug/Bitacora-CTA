@@ -12,17 +12,18 @@
 </head>
 <body>
 
-    <div id="vistaRegistro" class="vista activa" role="main" aria-label="Registro de nueva actividad">
+    <div id="vistaRegistro" class="vista activa">
         <div class="contenedor">
             <h1 style="margin-top: 0;">Nueva Actividad</h1>
 
-            <form id="formularioTimesheet" aria-label="Formulario de registro de tiempo">
-                <label id="cronometroLabel">Cronómetro Inteligente:</label>
-                <div class="cronometro-contenedor" aria-labelledby="cronometroLabel" role="group">
-                    <span id="displayTiempo" aria-live="polite" aria-atomic="true">00:00:00</span>
+            <form id="formularioTimesheet">
+                <input type="hidden" id="editId" value="">
+                <label>Cronómetro Inteligente:</label>
+                <div class="cronometro-contenedor">
+                    <span id="displayTiempo">00:00:00</span>
                     <div class="botones-tiempo">
-                        <button type="button" id="btnIniciar" class="btn-tiempo iniciar" aria-label="Iniciar cronómetro">Iniciar</button>
-                        <button type="button" id="btnDetener" class="btn-tiempo detener" disabled aria-label="Detener cronómetro">Detener</button>
+                        <button type="button" id="btnIniciar" class="btn-tiempo iniciar">Iniciar</button>
+                        <button type="button" id="btnDetener" class="btn-tiempo detener" disabled>Detener</button>
                     </div>
                 </div>
 
@@ -30,7 +31,8 @@
                 <input type="date" id="fecha" required>
 
                 <label for="protocolo">Código de Protocolo:</label>
-                <input type="text" id="protocolo" placeholder="Ej. PROT-2026">
+                <input type="text" id="protocolo" placeholder="Ej. PROT-2026" list="listaProtocolos">
+                <datalist id="listaProtocolos"></datalist>
 
                 <label for="categoria">Categoría de la Actividad:</label>
                 <select id="categoria" required>
@@ -59,40 +61,62 @@
         </div>
     </div>
 
-    <div id="vistaBitacora" class="vista" role="main" aria-label="Bitácora de actividades registradas">
-        <div class="contenedor" style="max-width: 800px;">
+    <div id="vistaBitacora" class="vista">
+        <div class="contenedor" style="max-width: 600px;">
             <h1 style="margin-top: 0;">Bitácora de Actividades</h1>
 
-            <button type="button" id="btnExportar" style="background-color: #107c41; margin-bottom: 20px;" aria-label="Exportar datos a CSV compatible con Excel y PowerBI">📥 Exportar a Excel/PowerBI (CSV)</button>
+            <button type="button" id="btnExportar" style="background-color: #107c41; margin-bottom: 20px;">📥 Exportar todo a Excel (CSV)</button>
 
-            <div class="tabla-contenedor" role="region" aria-label="Tabla de actividades" tabindex="0">
+            <div style="overflow-x: auto; background: white; border-radius: 8px;">
                 <table id="tablaBitacora">
                     <thead>
                         <tr>
-                            <th scope="col">Fecha</th>
-                            <th scope="col">Protocolo</th>
-                            <th scope="col">Categoría</th>
-                            <th scope="col">Actividad</th>
-                            <th scope="col">Horas</th>
+                            <th>Fecha</th>
+                            <th>Protocolo</th>
+                            <th>Categoría</th>
+                            <th>Actividad</th>
+                            <th>Horas</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody aria-live="polite">
+                    <tbody>
                         </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <nav class="barra-navegacion" role="navigation" aria-label="Navegación principal">
-        <button id="navBtnRegistro" class="nav-item activo" aria-current="page" aria-label="Ir a la vista de Registro">
-            <span style="font-size: 20px;" aria-hidden="true">📝</span><br>Registrar
+    <div id="vistaEstadisticas" class="vista">
+        <div class="contenedor">
+            <h1 style="margin-top: 0;">Estadísticas</h1>
+            <div id="statsResumen" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                <div class="stat-card" style="background: #e1f5fe; padding: 15px; border-radius: 8px; text-align: center;">
+                    <small>Total Horas</small><br><strong id="statTotalHoras" style="font-size: 1.5em;">0</strong>
+                </div>
+                <div class="stat-card" style="background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center;">
+                    <small>Actividades</small><br><strong id="statTotalActividades" style="font-size: 1.5em;">0</strong>
+                </div>
+            </div>
+            <div id="chartContenedor" style="background: white; padding: 15px; border-radius: 8px;">
+                <h3>Horas por Categoría</h3>
+                <div id="categoriaStats"></div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="barra-navegacion">
+        <button id="navBtnRegistro" class="nav-item activo">
+            <span style="font-size: 20px;">📝</span><br>Registrar
         </button>
-        <button id="navBtnBitacora" class="nav-item" aria-label="Ir a la vista de Bitácora">
-            <span style="font-size: 20px;" aria-hidden="true">📊</span><br>Bitácora
+        <button id="navBtnBitacora" class="nav-item">
+            <span style="font-size: 20px;">📊</span><br>Bitácora
+        </button>
+        <button id="navBtnStats" class="nav-item">
+            <span style="font-size: 20px;">📈</span><br>Stats
         </button>
     </nav>
 
-    <div id="toastContainer" aria-live="assertive" aria-atomic="true"></div>
+    <div id="toastContainer"></div>
 
     <script src="app.js"></script>
 </body>

@@ -1,0 +1,25 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "Una aplicación web progresiva (PWA) diseñada específicamente para agilizar el registro de actividades y horas facturables en el entorno de los Ensayos Clínicos. Creada para Clinical Trial Assistants (CTA), Coordinadores (CRC) y equipos de Data Entry.",
+  "main": "app.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maciasvidal-debug/Bitacora-CTA.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/maciasvidal-debug/Bitacora-CTA/issues"
+  },
+  "homepage": "https://github.com/maciasvidal-debug/Bitacora-CTA#readme"
+}
