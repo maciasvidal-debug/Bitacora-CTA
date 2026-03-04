@@ -65,8 +65,17 @@
                 <label for="descripcion" id="labelDescripcion" class="oculto">Descripción de la actividad (Detalles):</label>
                 <textarea id="descripcion" class="oculto" rows="3" placeholder="Detalla tu actividad aquí..."></textarea>
 
-                <label for="horas">Horas invertidas:</label>
-                <input type="number" id="horas" step="0.5" min="0" placeholder="Ej: 2.5">
+                <label>Tiempo invertido:</label>
+                <div class="tiempo-inputs-contenedor">
+                    <div class="input-grupo">
+                        <input type="number" id="inputHoras" min="0" step="1" placeholder="0">
+                        <span>h</span>
+                    </div>
+                    <div class="input-grupo">
+                        <input type="number" id="inputMinutos" min="0" max="59" step="1" placeholder="0">
+                        <span>m</span>
+                    </div>
+                </div>
 
                 <button type="submit">Guardar Actividad</button>
             </form>

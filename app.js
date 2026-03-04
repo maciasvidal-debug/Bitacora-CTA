@@ -105,7 +105,8 @@ let intervaloReloj; let tiempoInicio; let tiempoTranscurrido = 0; let cronometro
 const displayTiempo = document.getElementById('displayTiempo');
 const btnIniciar = document.getElementById('btnIniciar');
 const btnDetener = document.getElementById('btnDetener');
-const inputHoras = document.getElementById('horas');
+const inputHoras = document.getElementById('inputHoras');
+const inputMinutos = document.getElementById('inputMinutos');
 
 btnIniciar.addEventListener('click', () => {
     if (cronometroEnMarcha) return;
@@ -121,8 +122,15 @@ btnDetener.addEventListener('click', () => {
     cronometroEnMarcha = false;
     clearInterval(intervaloReloj);
     btnIniciar.disabled = false; btnDetener.disabled = true;
-    const horasDecimales = (tiempoTranscurrido / (1000 * 60 * 60)).toFixed(2);
-    inputHoras.value = horasDecimales;
+
+    // Calcular horas y minutos enteros en lugar de decimales
+    let totalSegundos = Math.floor(tiempoTranscurrido / 1000);
+    let horas = Math.floor(totalSegundos / 3600);
+    let minutos = Math.floor((totalSegundos % 3600) / 60);
+
+    inputHoras.value = horas;
+    inputMinutos.value = minutos;
+
     mostrarToast(`⏱️ Tiempo detenido.`);
     tiempoTranscurrido = 0; displayTiempo.textContent = "00:00:00";
 });
@@ -368,7 +376,14 @@ window.cargarParaEditar = (id, index) => {
         labelDescripcion.classList.remove('oculto');
     }
 
-    document.getElementById('horas').value = act.horas;
+    // Convertir decimal de vuelta a horas y minutos para los inputs
+    const horasTotales = parseFloat(act.horas) || 0;
+    const hrsEnteras = Math.floor(horasTotales);
+    const minsEnteros = Math.round((horasTotales - hrsEnteras) * 60);
+
+    document.getElementById('inputHoras').value = hrsEnteras;
+    document.getElementById('inputMinutos').value = minsEnteros;
+
     cambiarVista('registro');
     document.querySelector('#formularioTimesheet button[type="submit"]').textContent = "Actualizar Actividad";
 };
@@ -380,12 +395,17 @@ formulario.addEventListener('submit', evento => {
     let descripcionFinal = selectCategoria.value === "otra" || selectActividad.value === "Otra"
         ? textareaDescripcion.value.replace(/,/g, " ") : selectActividad.value;
 
+    // Calcular el decimal de horas en base a horas y minutos enteros
+    const hrs = parseInt(document.getElementById('inputHoras').value) || 0;
+    const mins = parseInt(document.getElementById('inputMinutos').value) || 0;
+    const horasCalculadas = parseFloat((hrs + (mins / 60)).toFixed(2));
+
     const datosActividad = {
         fecha: document.getElementById('fecha').value,
         protocolo: document.getElementById('protocolo').value,
         categoria: selectCategoria.value,
         descripcion: descripcionFinal,
-        horas: parseFloat(document.getElementById('horas').value)
+        horas: horasCalculadas
     };
 
     if (editId) {
@@ -467,6 +487,7 @@ function actualizarEstadisticas() {
     const statsPorProtocolo = {};
     const statsPorFecha = {};
     let microTareasCount = 0;
+    let microTareasHoras = 0;
 
     listaActividades.forEach(act => {
         const horasAct = parseFloat(act.horas) || 0;
@@ -481,9 +502,10 @@ function actualizarEstadisticas() {
         // Acumular por fecha para calcular burnout
         statsPorFecha[act.fecha] = (statsPorFecha[act.fecha] || 0) + horasAct;
 
-        // Contar micro-tareas
+        // Contar micro-tareas y su tiempo
         if (act.categoria === 'micro_operaciones' || act.categoria === 'micro_administrativas') {
             microTareasCount++;
+            microTareasHoras += horasAct;
         }
     });
 
@@ -514,9 +536,18 @@ function actualizarEstadisticas() {
 
             // Insight: Micro-tareas
             if (microTareasCount > 0) {
+                // Formateo inteligente del tiempo de micro-tareas
+                let textoTiempo;
+                if (microTareasHoras < 1) {
+                    const minutosCalculados = Math.round(microTareasHoras * 60);
+                    textoTiempo = `${minutosCalculados} minutos totales`;
+                } else {
+                    textoTiempo = `${microTareasHoras.toFixed(1)} horas totales`;
+                }
+
                 const microInsight = document.createElement('div');
                 microInsight.style.cssText = "background-color: #fff3e0; color: #ef6c00; padding: 12px; border-radius: 6px; font-size: 14px; border-left: 4px solid #ef6c00;";
-                microInsight.innerHTML = `<strong>⚡ Eficiencia:</strong> Has completado ${microTareasCount} micro-tareas rápidas registradas.`;
+                microInsight.innerHTML = `<strong>⚡ Eficiencia:</strong> Has completado ${microTareasCount} micro-tareas (${textoTiempo}).`;
                 insightsFragment.appendChild(microInsight);
             }
         }
