@@ -239,10 +239,12 @@ selectCategoria.addEventListener('change', () => {
         selectActividad.classList.add('oculto'); labelActividad.classList.add('oculto');
         textareaDescripcion.classList.remove('oculto'); labelDescripcion.classList.remove('oculto');
     } else if (cat !== "") {
+        const fragment = document.createDocumentFragment();
         opcionesPorCategoria[cat].forEach(act => {
             const opt = document.createElement('option'); opt.value = act; opt.textContent = act;
-            selectActividad.appendChild(opt);
+            fragment.appendChild(opt);
         });
+        selectActividad.appendChild(fragment);
         selectActividad.classList.remove('oculto'); labelActividad.classList.remove('oculto');
         textareaDescripcion.classList.add('oculto'); labelDescripcion.classList.add('oculto');
     } else {
@@ -287,6 +289,7 @@ function actualizarTablaBitacora() {
         "otra": "Otra"
     };
 
+    const fragment = document.createDocumentFragment();
     listaActividades.slice().reverse().forEach((actividad, indexOriginal) => {
         const fila = document.createElement('tr');
         const index = listaActividades.length - 1 - indexOriginal;
@@ -304,8 +307,9 @@ function actualizarTablaBitacora() {
                 <button aria-label="Eliminar actividad" onclick="eliminarRegistro(${actividad.id}, ${index})" style="background:none; border:none; cursor:pointer;">🗑️</button>
             </td>
         `;
-        cuerpoTabla.appendChild(fila);
+        fragment.appendChild(fila);
     });
+    cuerpoTabla.appendChild(fragment);
 }
 
 window.eliminarRegistro = (id, index) => {
@@ -390,10 +394,11 @@ formulario.addEventListener('submit', evento => {
 
 botonExportar.addEventListener('click', () => {
     if (listaActividades.length === 0) { mostrarToast("⚠️ No hay datos para exportar."); return; }
-    let contenidoCSV = "Fecha,Protocolo,Categoria,Descripcion,Horas\n";
+    const filasCSV = ["Fecha,Protocolo,Categoria,Descripcion,Horas"];
     listaActividades.forEach(act => {
-        contenidoCSV += `${act.fecha},${act.protocolo},${act.categoria},${act.descripcion},${act.horas}\n`;
+        filasCSV.push(`${act.fecha},${act.protocolo},${act.categoria},${act.descripcion},${act.horas}`);
     });
+    const contenidoCSV = filasCSV.join('\n') + '\n';
     const blob = new Blob([contenidoCSV], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const enlace = document.createElement("a");
@@ -410,11 +415,13 @@ function actualizarDatalistProtocolos() {
     const datalist = document.getElementById('listaProtocolos');
     if (!datalist) return;
     datalist.innerHTML = "";
+    const fragment = document.createDocumentFragment();
     listaProtocolos.forEach(p => {
         const opt = document.createElement('option');
         opt.value = p;
-        datalist.appendChild(opt);
+        fragment.appendChild(opt);
     });
+    datalist.appendChild(fragment);
 }
 actualizarDatalistProtocolos();
 
@@ -445,6 +452,7 @@ function actualizarEstadisticas() {
         "otra": "Otra"
     };
 
+    const fragment = document.createDocumentFragment();
     Object.keys(statsPorCategoria).sort((a, b) => statsPorCategoria[b] - statsPorCategoria[a]).forEach(cat => {
         const horas = statsPorCategoria[cat];
         const porcentaje = totalHoras > 0 ? (horas / totalHoras * 100).toFixed(0) : 0;
@@ -461,8 +469,9 @@ function actualizarEstadisticas() {
                 <div style="background: #0078D4; width: ${porcentaje}%; height: 100%;"></div>
             </div>
         `;
-        contenedor.appendChild(bar);
+        fragment.appendChild(bar);
     });
+    contenedor.appendChild(fragment);
 }
 
 // ==========================================
