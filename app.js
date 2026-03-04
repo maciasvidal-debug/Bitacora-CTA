@@ -303,8 +303,8 @@ function actualizarTablaBitacora() {
             <td>${actividad.descripcion}</td>
             <td><strong>${actividad.horas}</strong></td>
             <td>
-                <button onclick="cargarParaEditar(${actividad.id}, ${index})" style="background:none; border:none; cursor:pointer;">✏️</button>
-                <button onclick="eliminarRegistro(${actividad.id}, ${index})" style="background:none; border:none; cursor:pointer;">🗑️</button>
+                <button aria-label="Editar actividad" onclick="cargarParaEditar(${actividad.id}, ${index})" style="background:none; border:none; cursor:pointer;">✏️</button>
+                <button aria-label="Eliminar actividad" onclick="eliminarRegistro(${actividad.id}, ${index})" style="background:none; border:none; cursor:pointer;">🗑️</button>
             </td>
         `;
         fragment.appendChild(fila);
