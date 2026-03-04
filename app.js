@@ -3,6 +3,7 @@
 // ==========================================
 let db;
 let listaActividades = [];
+let listaProtocolos = JSON.parse(localStorage.getItem('protocolos')) || [];
 
 const solicitudDB = indexedDB.open("BaseDatosCTA", 1);
 solicitudDB.onupgradeneeded = evento => {
@@ -17,17 +18,42 @@ solicitudDB.onsuccess = evento => {
 function cargarDatosGuardados() {
     const transaccion = db.transaction(["actividades"], "readonly");
     const almacen = transaccion.objectStore("actividades");
+
     const solicitud = almacen.getAll();
+    const solicitudKeys = almacen.getAllKeys();
+
     solicitud.onsuccess = () => {
-        listaActividades = solicitud.result;
-        actualizarTablaBitacora(); // Actualizamos la tabla al iniciar
+        const result = solicitud.result;
+        solicitudKeys.onsuccess = () => {
+            const keys = solicitudKeys.result;
+            listaActividades = result.map((act, index) => ({
+                ...act,
+                id: keys[index]
+            }));
+            actualizarTablaBitacora();
+        };
     };
 }
 
 function guardarEnDB(actividad) {
     const transaccion = db.transaction(["actividades"], "readwrite");
     const almacen = transaccion.objectStore("actividades");
-    almacen.add(actividad);
+    const solicitud = almacen.add(actividad);
+    solicitud.onsuccess = (evento) => {
+        actividad.id = evento.target.result;
+    };
+}
+
+function eliminarDeDB(id) {
+    const transaccion = db.transaction(["actividades"], "readwrite");
+    const almacen = transaccion.objectStore("actividades");
+    almacen.delete(id);
+}
+
+function actualizarEnDB(id, actividad) {
+    const transaccion = db.transaction(["actividades"], "readwrite");
+    const almacen = transaccion.objectStore("actividades");
+    almacen.put(actividad, id);
 }
 
 // ==========================================
@@ -35,15 +61,20 @@ function guardarEnDB(actividad) {
 // ==========================================
 const btnNavRegistro = document.getElementById('navBtnRegistro');
 const btnNavBitacora = document.getElementById('navBtnBitacora');
+const btnNavStats = document.getElementById('navBtnStats');
 const vistaRegistro = document.getElementById('vistaRegistro');
 const vistaBitacora = document.getElementById('vistaBitacora');
+const vistaStats = document.getElementById('vistaEstadisticas');
 
 function cambiarVista(vistaDestino) {
     // Apagamos todo primero
     vistaRegistro.classList.remove('activa');
     vistaBitacora.classList.remove('activa');
+    if (vistaStats) vistaStats.classList.remove('activa');
+
     btnNavRegistro.classList.remove('activo');
     btnNavBitacora.classList.remove('activo');
+    if (btnNavStats) btnNavStats.classList.remove('activo');
 
     // Encendemos solo lo que el usuario pidió
     if (vistaDestino === 'registro') {
@@ -52,17 +83,21 @@ function cambiarVista(vistaDestino) {
     } else if (vistaDestino === 'bitacora') {
         vistaBitacora.classList.add('activa');
         btnNavBitacora.classList.add('activo');
-        actualizarTablaBitacora(); // Refrescamos la tabla al entrar
+        actualizarTablaBitacora();
 
-        // CORRECCIÓN UX: Si la bitácora está vacía al entrar, lanzamos un Toast
         if (listaActividades.length === 0) {
             mostrarToast("ℹ️ La bitácora está vacía. ¡Registra tu primera actividad!");
         }
+    } else if (vistaDestino === 'stats') {
+        if (vistaStats) vistaStats.classList.add('activa');
+        if (btnNavStats) btnNavStats.classList.add('activo');
+        actualizarEstadisticas();
     }
 }
 
 btnNavRegistro.addEventListener('click', () => cambiarVista('registro'));
 btnNavBitacora.addEventListener('click', () => cambiarVista('bitacora'));
+if (btnNavStats) btnNavStats.addEventListener('click', () => cambiarVista('stats'));
 
 // ==========================================
 // 3. TOASTS Y CRONÓMETRO
@@ -111,6 +146,17 @@ function actualizarReloj() {
     displayTiempo.textContent = String(horas).padStart(2, '0') + ":" + String(minutos).padStart(2, '0') + ":" + String(segundos).padStart(2, '0');
 }
 
+// Exportar para pruebas si estamos en un entorno de Node
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        actualizarReloj,
+        getTiempoTranscurrido: () => tiempoTranscurrido,
+        setTiempoInicio: (v) => { tiempoInicio = v; },
+        getTiempoInicio: () => tiempoInicio,
+        setCronometroEnMarcha: (v) => { cronometroEnMarcha = v; }
+    };
+}
+
 // ==========================================
 // 4. LÓGICA DE FORMULARIO (Cascada)
 // ==========================================
@@ -122,65 +168,65 @@ const labelDescripcion = document.getElementById('labelDescripcion');
 
 const opcionesPorCategoria = {
     monitoreo: [
-        "Visita de Selección (PSV)", 
-        "Visita de Inicio (SIV)", 
-        "Visita de Monitoreo Interino (IMV/RMV)", 
-        "Visita de Cierre (COV)", 
+        "Visita de Selección (PSV)",
+        "Visita de Inicio (SIV)",
+        "Visita de Monitoreo Interino (IMV/RMV)",
+        "Visita de Cierre (COV)",
         "Preparación/Atención de Auditorías o Inspecciones",
         "Seguimiento de Hallazgos (Action Items)",
-        "Verificación / Revisión de documentos (SDV/SDR"),
+        "Verificación / Revisión de documentos (SDV/SDR)",
         "Otra"
     ],
     documentacion: [
-        "Actualización de TMF / ISF", 
-        "Control de Versiones y Archivo", 
-        "Gestión de Firmas (DOA, FDA 1572)", 
-        "Revisión de Calidad (QC) de Documentos", 
-        "Manejo de Correspondencia del Estudio", 
+        "Actualización de TMF / ISF",
+        "Control de Versiones y Archivo",
+        "Gestión de Firmas (DOA, FDA 1572)",
+        "Revisión de Calidad (QC) de Documentos",
+        "Manejo de Correspondencia del Estudio",
         "Preparación de Manuales/Checklists",
         "Otra"
     ],
     entrenamiento: [
-        "Entrenamiento en Protocolo / Enmiendas", 
-        "Entrenamiento en Buenas Prácticas Clínicas (GCP)", 
-        "Entrenamiento en Sistemas (EDC, CTMS, eISF)", 
-        "Inducción (Onboarding) de Equipo", 
+        "Entrenamiento en Protocolo / Enmiendas",
+        "Entrenamiento en Buenas Prácticas Clínicas (GCP)",
+        "Entrenamiento en Sistemas (EDC, CTMS, eISF)",
+        "Inducción (Onboarding) de Equipo",
         "Otra"
     ],
     reuniones: [
-        "Reunión de Equipo de Estudio (Interna)", 
-        "Reunión con el Sponsor / CRO", 
-        "Reunión de Investigadores (Investigator Meeting)", 
-        "Reunión con el Sitio Clínico / Proveedores", 
+        "Reunión de Equipo de Estudio (Interna)",
+        "Reunión con el Sponsor / CRO",
+        "Reunión de Investigadores (Investigator Meeting)",
+        "Reunión con el Sitio Clínico / Proveedores",
         "Elaboración de Minutas de Reunión",
         "Otra"
     ],
     coordinacion: [
-        "Pre-Screening y Reclutamiento de Pacientes", 
-        "Proceso de Consentimiento Informado (ICF)", 
-        "Visita de Paciente (Screening/Randomización)", 
-        "Visitas de Seguimiento de Paciente", 
-        "Manejo de Muestras Biológicas (Laboratorio/Envío)", 
-        "Manejo de Droga de Estudio (IP Accountability)", 
+        "Pre-Screening y Reclutamiento de Pacientes",
+        "Proceso de Consentimiento Informado (ICF)",
+        "Visita de Paciente (Screening/Randomización)",
+        "Visitas de Seguimiento de Paciente",
+        "Manejo de Muestras Biológicas (Laboratorio/Envío)",
+        "Manejo de Droga de Estudio (IP Accountability)",
         "Evaluación y Reporte de Eventos Adversos (AE/SAE)",
         "Educación y Retención de Pacientes",
         "Otra"
     ],
     data_entry: [
-        "Ingreso de Datos en eCRF (EDC)", 
-        "Revisión y Resolución de Queries", 
-        "Control de Calidad (QC) de Datos Ingresados", 
-        "Conciliación de Datos (SAEs, Laboratorios)", 
-        "Gestión de Diarios de Pacientes (ePRO/eDiary)", 
+        "Ingreso de Datos en eCRF (EDC)",
+        "Revisión y Resolución de Queries",
+        "Control de Calidad (QC) de Datos Ingresados",
+        "Conciliación de Datos (SAEs, Laboratorios)",
+        "Gestión de Diarios de Pacientes (ePRO/eDiary)",
         "Revisión de Source Documents (Documentos Fuente)",
         "Otra"
     ],
     regulatorio: [
-        "Sometimiento Inicial al Comité de Ética (IRB/IEC)", 
-        "Sometimiento de Enmiendas y Renovaciones Anuales", 
-        "Reporte de Seguridad (SAE/SUSAR) al Comité", 
-        "Sometimiento a Agencia Regulatoria", 
-        "Actualización de Documentos de Investigadores (CVs, Licencias)", 
+        "Sometimiento Inicial al Comité de Ética (IRB/IEC)",
+        "Sometimiento de Enmiendas y Renovaciones Anuales",
+        "Reporte de Seguridad (SAE/SUSAR) al Comité",
+        "Sometimiento a Agencia Regulatoria",
+        "Actualización de Documentos de Investigadores (CVs, Licencias)",
         "Otra"
     ]
 };
@@ -188,7 +234,7 @@ const opcionesPorCategoria = {
 selectCategoria.addEventListener('change', () => {
     const cat = selectCategoria.value;
     selectActividad.innerHTML = '<option value="">-- Selecciona una actividad --</option>';
-    
+
     if (cat === "otra") {
         selectActividad.classList.add('oculto'); labelActividad.classList.add('oculto');
         textareaDescripcion.classList.remove('oculto'); labelDescripcion.classList.remove('oculto');
@@ -222,7 +268,7 @@ const cuerpoTabla = document.querySelector('#tablaBitacora tbody');
 
 function actualizarTablaBitacora() {
     cuerpoTabla.innerHTML = "";
-    
+
     if (listaActividades.length === 0) {
         // CORRECCIÓN 3: El colspan ahora es 5 porque tenemos 5 columnas
         cuerpoTabla.innerHTML = "<tr><td colspan='5' style='text-align: center;'>Sin actividades.</td></tr>";
@@ -241,27 +287,67 @@ function actualizarTablaBitacora() {
         "otra": "Otra"
     };
 
-    listaActividades.slice().reverse().forEach(actividad => {
+    listaActividades.slice().reverse().forEach((actividad, indexOriginal) => {
         const fila = document.createElement('tr');
-        
-        // Buscamos el nombre bonito de la categoría, si no lo encuentra, usa el original
+        const index = listaActividades.length - 1 - indexOriginal;
+
         const nombreCategoria = nombresCategorias[actividad.categoria] || actividad.categoria;
 
-        // CORRECCIÓN 4: Insertamos la celda de la categoría en el orden correcto
         fila.innerHTML = `
             <td>${actividad.fecha}</td>
             <td>${actividad.protocolo || "-"}</td>
             <td>${nombreCategoria}</td>
             <td>${actividad.descripcion}</td>
             <td><strong>${actividad.horas}</strong></td>
+            <td>
+                <button onclick="cargarParaEditar(${actividad.id}, ${index})" style="background:none; border:none; cursor:pointer;">✏️</button>
+                <button onclick="eliminarRegistro(${actividad.id}, ${index})" style="background:none; border:none; cursor:pointer;">🗑️</button>
+            </td>
         `;
         cuerpoTabla.appendChild(fila);
     });
 }
 
+window.eliminarRegistro = (id, index) => {
+    if (confirm("¿Estás seguro de eliminar esta actividad?")) {
+        listaActividades.splice(index, 1);
+        eliminarDeDB(id);
+        actualizarTablaBitacora();
+        mostrarToast("🗑️ Registro eliminado.");
+    }
+};
+
+window.cargarParaEditar = (id, index) => {
+    const act = listaActividades[index];
+    document.getElementById('editId').value = id;
+    document.getElementById('fecha').value = act.fecha;
+    document.getElementById('protocolo').value = act.protocolo;
+    selectCategoria.value = act.categoria;
+
+    // Disparar el evento change para que se carguen las actividades específicas
+    selectCategoria.dispatchEvent(new Event('change'));
+
+    if (opcionesPorCategoria[act.categoria] && opcionesPorCategoria[act.categoria].includes(act.descripcion)) {
+        selectActividad.value = act.descripcion;
+        textareaDescripcion.classList.add('oculto');
+        labelDescripcion.classList.add('oculto');
+    } else {
+        selectActividad.value = "Otra";
+        textareaDescripcion.value = act.descripcion;
+        textareaDescripcion.classList.remove('oculto');
+        labelDescripcion.classList.remove('oculto');
+    }
+
+    document.getElementById('horas').value = act.horas;
+    cambiarVista('registro');
+    document.querySelector('#formularioTimesheet button[type="submit"]').textContent = "Actualizar Actividad";
+};
+
 formulario.addEventListener('submit', evento => {
     evento.preventDefault();
-    let descripcionFinal = selectCategoria.value === "otra" || selectActividad.value === "Otra" 
+    const editId = document.getElementById('editId').value;
+
+    let descripcionFinal = selectCategoria.value === "otra" || selectActividad.value === "Otra"
         ? textareaDescripcion.value.replace(/,/g, " ") : selectActividad.value;
 
     const datosActividad = {
@@ -272,11 +358,31 @@ formulario.addEventListener('submit', evento => {
         horas: parseFloat(document.getElementById('horas').value)
     };
 
-    listaActividades.push(datosActividad);
-    guardarEnDB(datosActividad);
-    actualizarTablaBitacora(); // Actualiza la tabla en segundo plano
-    mostrarToast(`✅ Guardado. Tienes ${listaActividades.length} actividades.`);
-    
+    if (editId) {
+        const idInt = parseInt(editId);
+        const index = listaActividades.findIndex(a => a.id === idInt);
+        if (index !== -1) {
+            listaActividades[index] = { ...datosActividad, id: idInt };
+            actualizarEnDB(idInt, datosActividad);
+            mostrarToast("✅ Registro actualizado.");
+        }
+        document.getElementById('editId').value = "";
+        document.querySelector('#formularioTimesheet button[type="submit"]').textContent = "Guardar Actividad";
+    } else {
+        listaActividades.push(datosActividad);
+        guardarEnDB(datosActividad);
+        mostrarToast(`✅ Guardado. Tienes ${listaActividades.length} actividades.`);
+    }
+
+    actualizarTablaBitacora();
+
+    // Guardar protocolo si es nuevo
+    if (datosActividad.protocolo && !listaProtocolos.includes(datosActividad.protocolo)) {
+        listaProtocolos.push(datosActividad.protocolo);
+        localStorage.setItem('protocolos', JSON.stringify(listaProtocolos));
+        actualizarDatalistProtocolos();
+    }
+
     formulario.reset();
     selectActividad.classList.add('oculto'); labelActividad.classList.add('oculto');
     textareaDescripcion.classList.add('oculto'); labelDescripcion.classList.add('oculto');
@@ -298,7 +404,69 @@ botonExportar.addEventListener('click', () => {
 });
 
 // ==========================================
-// 6. REGISTRO DEL SERVICE WORKER (PWA)
+// 6. FUNCIONES ADICIONALES
+// ==========================================
+function actualizarDatalistProtocolos() {
+    const datalist = document.getElementById('listaProtocolos');
+    if (!datalist) return;
+    datalist.innerHTML = "";
+    listaProtocolos.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p;
+        datalist.appendChild(opt);
+    });
+}
+actualizarDatalistProtocolos();
+
+function actualizarEstadisticas() {
+    const totalHoras = listaActividades.reduce((sum, act) => sum + (parseFloat(act.horas) || 0), 0);
+    const elHoras = document.getElementById('statTotalHoras');
+    const elActs = document.getElementById('statTotalActividades');
+    if (elHoras) elHoras.textContent = totalHoras.toFixed(1);
+    if (elActs) elActs.textContent = listaActividades.length;
+
+    const statsPorCategoria = {};
+    listaActividades.forEach(act => {
+        statsPorCategoria[act.categoria] = (statsPorCategoria[act.categoria] || 0) + (parseFloat(act.horas) || 0);
+    });
+
+    const contenedor = document.getElementById('categoriaStats');
+    if (!contenedor) return;
+    contenedor.innerHTML = "";
+
+    const nombresCategoriasBonitos = {
+        "monitoreo": "Monitoreo",
+        "documentacion": "Doc/TMF",
+        "entrenamiento": "Entrenamiento",
+        "reuniones": "Reuniones",
+        "coordinacion": "Coord. Clínica",
+        "data_entry": "Data Entry",
+        "regulatorio": "Regulatorio",
+        "otra": "Otra"
+    };
+
+    Object.keys(statsPorCategoria).sort((a, b) => statsPorCategoria[b] - statsPorCategoria[a]).forEach(cat => {
+        const horas = statsPorCategoria[cat];
+        const porcentaje = totalHoras > 0 ? (horas / totalHoras * 100).toFixed(0) : 0;
+        const nombre = nombresCategoriasBonitos[cat] || cat;
+
+        const bar = document.createElement('div');
+        bar.style.marginBottom = "10px";
+        bar.innerHTML = `
+            <div style="display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 4px;">
+                <span>${nombre}</span>
+                <span>${horas.toFixed(1)}h (${porcentaje}%)</span>
+            </div>
+            <div style="background: #eee; height: 8px; border-radius: 4px; overflow: hidden;">
+                <div style="background: #0078D4; width: ${porcentaje}%; height: 100%;"></div>
+            </div>
+        `;
+        contenedor.appendChild(bar);
+    });
+}
+
+// ==========================================
+// 7. REGISTRO DEL SERVICE WORKER (PWA)
 // ==========================================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -312,4 +480,3 @@ if ('serviceWorker' in navigator) {
     });
 
 }
-

@@ -6,7 +6,7 @@ body {
     padding: 0;
     /* Esto evita el scrolling general de la página */
     height: 100vh;
-    overflow: hidden; 
+    overflow: hidden;
     display: flex;
     flex-direction: column;
 }
@@ -112,23 +112,23 @@ table tbody tr:nth-child(even) { background-color: #fafafa; }
 /* ========================================== */
 
 @media (min-width: 768px) {
-    
+
     .barra-navegacion {
         top: 0;
-        bottom: auto; 
+        bottom: auto;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        justify-content: center; 
-        gap: 50px; 
+        justify-content: center;
+        gap: 50px;
     }
 
     body {
-        padding-top: 80px; 
-        height: auto; 
+        padding-top: 80px;
+        height: auto;
         overflow: auto; /* CORRECCIÓN: Permite hacer scroll general si la pantalla es muy pequeña */
     }
 
     .vista {
-        padding-bottom: 20px; 
+        padding-bottom: 20px;
         /* CORRECCIÓN: Eliminamos el 'display: flex' de aquí para que no "despierte" a las vistas ocultas */
     }
 
@@ -144,14 +144,14 @@ table tbody tr:nth-child(even) { background-color: #fafafa; }
 
     #formularioTimesheet {
         display: grid;
-        grid-template-columns: 1fr 1fr; 
-        gap: 15px; 
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
         align-items: start;
     }
 
-    .cronometro-contenedor, 
-    #labelDescripcion, 
-    #descripcion, 
+    .cronometro-contenedor,
+    #labelDescripcion,
+    #descripcion,
     button[type="submit"] {
         grid-column: span 2;
     }

@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>App Clínica CTA</title>
-    
+
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0078D4">
-    
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,8 +15,9 @@
     <div id="vistaRegistro" class="vista activa">
         <div class="contenedor">
             <h1 style="margin-top: 0;">Nueva Actividad</h1>
-            
+
             <form id="formularioTimesheet">
+                <input type="hidden" id="editId" value="">
                 <label>Cronómetro Inteligente:</label>
                 <div class="cronometro-contenedor">
                     <span id="displayTiempo">00:00:00</span>
@@ -30,7 +31,8 @@
                 <input type="date" id="fecha" required>
 
                 <label for="protocolo">Código de Protocolo:</label>
-                <input type="text" id="protocolo" placeholder="Ej. PROT-2026">
+                <input type="text" id="protocolo" placeholder="Ej. PROT-2026" list="listaProtocolos">
+                <datalist id="listaProtocolos"></datalist>
 
                 <label for="categoria">Categoría de la Actividad:</label>
                 <select id="categoria" required>
@@ -62,7 +64,7 @@
     <div id="vistaBitacora" class="vista">
         <div class="contenedor" style="max-width: 600px;">
             <h1 style="margin-top: 0;">Bitácora de Actividades</h1>
-            
+
             <button type="button" id="btnExportar" style="background-color: #107c41; margin-bottom: 20px;">📥 Exportar todo a Excel (CSV)</button>
 
             <div style="overflow-x: auto; background: white; border-radius: 8px;">
@@ -74,11 +76,30 @@
                             <th>Categoría</th>
                             <th>Actividad</th>
                             <th>Horas</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="vistaEstadisticas" class="vista">
+        <div class="contenedor">
+            <h1 style="margin-top: 0;">Estadísticas</h1>
+            <div id="statsResumen" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                <div class="stat-card" style="background: #e1f5fe; padding: 15px; border-radius: 8px; text-align: center;">
+                    <small>Total Horas</small><br><strong id="statTotalHoras" style="font-size: 1.5em;">0</strong>
+                </div>
+                <div class="stat-card" style="background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center;">
+                    <small>Actividades</small><br><strong id="statTotalActividades" style="font-size: 1.5em;">0</strong>
+                </div>
+            </div>
+            <div id="chartContenedor" style="background: white; padding: 15px; border-radius: 8px;">
+                <h3>Horas por Categoría</h3>
+                <div id="categoriaStats"></div>
             </div>
         </div>
     </div>
@@ -89,6 +110,9 @@
         </button>
         <button id="navBtnBitacora" class="nav-item">
             <span style="font-size: 20px;">📊</span><br>Bitácora
+        </button>
+        <button id="navBtnStats" class="nav-item">
+            <span style="font-size: 20px;">📈</span><br>Stats
         </button>
     </nav>
 
