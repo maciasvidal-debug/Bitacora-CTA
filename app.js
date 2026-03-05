@@ -1,9 +1,64 @@
+
+// --- PWA Service Worker Registration & Update Flow ---
+let nuevoWorker;
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(reg => {
+            console.log('Service Worker registrado:', reg.scope);
+
+            reg.addEventListener('updatefound', () => {
+                nuevoWorker = reg.installing;
+                nuevoWorker.addEventListener('statechange', () => {
+                    if (nuevoWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        // Show update toast
+                        const toast = document.getElementById('toastActualizacion');
+                        if(toast) toast.hidden = false;
+                    }
+                });
+            });
+        }).catch(err => {
+            console.error('Error al registrar Service Worker:', err);
+        });
+
+        // Listen for controller change to reload
+        let recargando = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!recargando) {
+                window.location.reload();
+                recargando = true;
+            }
+        });
+    });
+}
+
+// Attach event listener for the update button
+document.addEventListener('DOMContentLoaded', () => {
+    const btnActualizar = document.getElementById('btnActualizarApp');
+    if (btnActualizar) {
+        btnActualizar.addEventListener('click', () => {
+            if (nuevoWorker) {
+                nuevoWorker.postMessage({ action: 'skipWaiting' });
+            }
+        });
+    }
+});
+
 // SiteFlow v2.0 - Core Application Logic
 const SUPABASE_URL = 'https://belxyalngvqtspagnqwn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlbHh5YWxuZ3ZxdHNwYWducXduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNTI1ODcsImV4cCI6MjA4NjkyODU4N30.ropo__QE6S-uWs1X3umHc3dYoXD-g4B_OFLCm_Kpgjg'; // Legacy anon key for now, could use publishable
 
 // Initialize Supabase Client
 const supabase = typeof window !== 'undefined' && window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+// Fallback in case Supabase library fails to load
+document.addEventListener('DOMContentLoaded', () => {
+    if (!supabase) {
+        const errorDiv = document.getElementById('mensajeErrorLogin');
+        if (errorDiv) errorDiv.textContent = 'Error crítico: No se pudo cargar Supabase. Revise su conexión a internet.';
+        mostrarLogin();
+    }
+});
 
 // State Management
 const State = {
