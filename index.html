@@ -62,11 +62,7 @@
             <h1>SiteFlow <span class="badge-version">v2.0</span></h1>
 
             <!-- Navigation specifically for polymorphic roles -->
-            <nav id="navMenu" class="nav-menu" style="display: none;">
-                <button class="nav-btn active" data-target="vistaRegistro">Registro</button>
-                <button class="nav-btn" data-target="vistaDashboard" id="btnNavDashboard" style="display: none;">Dashboard Equipo</button>
-                <button class="nav-btn" data-target="vistaCatalogos" id="btnNavCatalogos" style="display: none;">Catálogos</button>
-            </nav>
+
         </header>
 
         <main>
@@ -197,5 +193,22 @@
     </div>
 
     <script src="app.js"></script>
+
+    <!-- Bottom Navigation Bar (Mobile) -->
+    <nav id="navMenu" class="bottom-nav" style="display: none;">
+        <button class="nav-btn active" data-target="vistaRegistro">
+            <span class="nav-icon">📝</span>
+            <span class="nav-text">Registro</span>
+        </button>
+        <button class="nav-btn" data-target="vistaDashboard" id="btnNavDashboard" style="display: none;">
+            <span class="nav-icon">📊</span>
+            <span class="nav-text">Equipo</span>
+        </button>
+        <button class="nav-btn" data-target="vistaCatalogos" id="btnNavCatalogos" style="display: none;">
+            <span class="nav-icon">📁</span>
+            <span class="nav-text">Catálogos</span>
+        </button>
+    </nav>
+
 </body>
 </html>
