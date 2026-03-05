@@ -13,8 +13,7 @@ body {
 
 /* --- Header Persistente --- */
 .app-header {
-    background-color: #0078D4;
-    color: white;
+    background-color: #FFFFFF;
     padding: 12px 20px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     display: flex;
@@ -27,22 +26,10 @@ body {
     align-items: center;
     gap: 10px;
 }
-.header-logo {
-    font-size: 24px;
-}
-.header-text {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-.header-title {
-    font-weight: bold;
-    font-size: 18px;
-    line-height: 1.1;
-}
-.header-subtitle {
-    font-size: 11px;
-    opacity: 0.8;
+.header-logo-img {
+    max-height: 45px;
+    width: auto;
+    display: block;
 }
 
 /* --- Lógica de Pantallas (Vistas) --- */
@@ -61,8 +48,7 @@ body {
 
 /* --- Contenedor Blanco --- */
 .contenedor {
-    background-color: white;
-    padding: 20px;
+    background-    padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     width: 100%;
@@ -109,8 +95,7 @@ button:hover { background-color: #005a9e; }
 .input-grupo {
     display: flex;
     align-items: center;
-    background-color: white;
-    border: 1px solid #ccc;
+    background-    border: 1px solid #ccc;
     border-radius: 5px;
     padding: 0 10px;
     flex: 1;
@@ -186,8 +171,7 @@ button:hover { background-color: #005a9e; }
     bottom: 0;
     left: 0;
     width: 100%;
-    background-color: white;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    background-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
     display: flex;
     justify-content: space-around;
     padding: 10px 0;
@@ -230,8 +214,7 @@ table tbody tr:nth-child(even) { background-color: #fafafa; }
     transform: translateX(-50%);
     z-index: 2000;
     background-color: #0078D4; /* Color corporativo */
-    color: white;
-    padding: 15px 20px;
+        padding: 15px 20px;
     border-radius: 8px;
     box-shadow: 0 6px 12px rgba(0,0,0,0.3);
     transition: top 0.5s ease, opacity 0.5s ease;
@@ -253,8 +236,7 @@ table tbody tr:nth-child(even) { background-color: #fafafa; }
     font-weight: bold;
 }
 .btn-actualizar {
-    background-color: white;
-    color: #0078D4;
+    background-    color: #0078D4;
     border: none;
     padding: 8px 12px;
     border-radius: 4px;

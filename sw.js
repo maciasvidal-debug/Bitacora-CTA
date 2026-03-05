@@ -1,5 +1,5 @@
 // Le damos un nombre a nuestra "memoria caché" (usamos versionado semántico)
-const NOMBRE_CACHE = 'cta-app-v1.3.1';
+const NOMBRE_CACHE = 'cta-app-v1.3.2';
 
 // Lista de archivos que queremos guardar en el teléfono
 const archivosACachear = [
@@ -7,7 +7,8 @@ const archivosACachear = [
     './index.html',
     './style.css',
     './app.js',
-    './manifest.json'
+    './manifest.json',
+    './siteflow-logo.png'
 ];
 
 // Paso 1: Instalación del Service Worker
