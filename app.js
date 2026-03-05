@@ -917,10 +917,10 @@ function actualizarEstadisticas() {
             bar.innerHTML = `
                 <div style="display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 4px;">
                     <span>${nombre}</span>
-                    <span>${horas.toFixed(1)}h (${porcentaje}%)</span>
+                    <span>${escapeHTML(String(horas.toFixed(1)))}h (${escapeHTML(String(porcentaje))}%)</span>
                 </div>
                 <div style="background: #eee; height: 8px; border-radius: 4px; overflow: hidden;">
-                    <div style="background: #0078D4; width: ${porcentaje}%; height: 100%;"></div>
+                    <div style="background: #0078D4; width: ${escapeHTML(String(porcentaje))}%; height: 100%;"></div>
                 </div>
             `;
             catFragment.appendChild(bar);
@@ -944,10 +944,10 @@ function actualizarEstadisticas() {
             bar.innerHTML = `
                 <div style="display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 4px;">
                     <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%;">${escProt}</span>
-                    <span>${horas.toFixed(1)}h (${porcentaje}%)</span>
+                    <span>${escapeHTML(String(horas.toFixed(1)))}h (${escapeHTML(String(porcentaje))}%)</span>
                 </div>
                 <div style="background: #eee; height: 8px; border-radius: 4px; overflow: hidden;">
-                    <div style="background: #107c41; width: ${porcentaje}%; height: 100%;"></div>
+                    <div style="background: #107c41; width: ${escapeHTML(String(porcentaje))}%; height: 100%;"></div>
                 </div>
             `;
             protFragment.appendChild(bar);
