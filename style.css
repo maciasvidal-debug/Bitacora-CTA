@@ -38,7 +38,7 @@ body {
     flex: 1; /* Toma todo el espacio sobrante arriba de la barra de navegación */
     overflow-y: auto; /* Permite hacer scroll SOLO dentro de la pantalla activa */
     padding: 20px;
-    padding-bottom: 90px; /* Deja espacio para que la barra inferior no tape el contenido */
+    padding-bottom: 110px; /* Deja espacio para que la barra inferior no tape el contenido */
 }
 
 /* Solo la pantalla que tenga la clase 'activa' se mostrará */
@@ -173,7 +173,7 @@ button:hover { background-color: #005a9e; }
     bottom: 0;
     left: 0;
     width: 100%;
-    background-color: white;
+    background-color: #ffffff;
     box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
     display: flex;
     justify-content: space-around;
@@ -245,7 +245,8 @@ table tbody tr:nth-child(even) { background-color: #fafafa; }
     font-weight: bold;
 }
 .btn-actualizar {
-    background-    color: #0078D4;
+    background-color: #ffffff;
+    color: #0078D4;
     border: none;
     padding: 8px 12px;
     border-radius: 4px;
