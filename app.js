@@ -49,11 +49,11 @@ const SUPABASE_URL = 'https://frawcmqosmutjlusnmpx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZyYXdjbXFvc211dGpsdXNubXB4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3NDMwNjUsImV4cCI6MjA4ODMxOTA2NX0.h9RiAF2BRsyBjwv4OjFqpH6VUbpLdOwgoF9DMPedU00'; // Legacy anon key for now, could use publishable
 
 // Initialize Supabase Client
-const supabase = typeof window !== 'undefined' && window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+const supabaseClient = typeof window !== 'undefined' && window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 // Fallback in case Supabase library fails to load
 document.addEventListener('DOMContentLoaded', () => {
-    if (!supabase) {
+    if (!supabaseClient) {
         const errorDiv = document.getElementById('mensajeErrorLogin');
         if (errorDiv) errorDiv.textContent = 'Error: Por favor configure las credenciales de su proyecto Supabase en el archivo app.js (SUPABASE_URL y SUPABASE_ANON_KEY).';
         mostrarLogin();
@@ -73,28 +73,25 @@ const State = {
 
 // --- Authentication & Session Management ---
 async function checkSession() {
-    if (!supabase) { return mostrarLogin(); }
+    if (!supabaseClient) { return mostrarLogin(); }
     try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-    if (error) {
-        console.error("Error checking session:", error.message);
-        mostrarLogin();
-        return;
-    }
+        const result = await supabaseClient.auth.getSession();
+        if (result.error) throw result.error;
+        const session = result.data.session;
+        if (session) {
+            await initializeUser(session.user);
+        } else {
+            mostrarLogin();
+        }
     } catch (e) {
         console.error("Supabase no configurado o falló:", e);
         mostrarLogin();
         return;
     }
 
-    if (session) {
-        await initializeUser(session.user);
-    } else {
-        mostrarLogin();
-    }
 }
 
-if (supabase) supabase.auth.onAuthStateChange(async (event, session) => {
+if (supabaseClient) supabaseClient.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN') {
         await initializeUser(session.user);
     } else if (event === 'SIGNED_OUT') {
@@ -116,7 +113,7 @@ async function initializeUser(user) {
             .eq('id', user.id)
             .single();
 
-        if (error) throw error;
+
         State.profile = profile;
 
         mostrarAppPrincipal();
@@ -198,8 +195,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             errorDiv.textContent = 'Iniciando sesión...';
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) throw error;
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
             errorDiv.textContent = '';
         } catch (err) {
             errorDiv.textContent = 'Error: ' + err.message;
@@ -208,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Logout
     document.getElementById('btnCerrarSesion').addEventListener('click', async () => {
-        await supabase.auth.signOut();
+        await supabaseClient.auth.signOut();
     });
 
     // Navigation
@@ -264,17 +261,17 @@ function crearOpcion(valor, texto) {
 async function cargarCatalogos() {
     try {
         // Fetch Protocols
-        const { data: protocolos, error: errP } = await supabase.from('protocols').select('id, name').order('name');
+        const { data: protocolos, error: errP } = await supabaseClient.from('protocols').select('id, name').order('name');
         if (errP) throw errP;
         State.protocols = protocolos;
 
         // Fetch Categories
-        const { data: categorias, error: errC } = await supabase.from('categories').select('id, name, role_target').order('name');
+        const { data: categorias, error: errC } = await supabaseClient.from('categories').select('id, name, role_target').order('name');
         if (errC) throw errC;
         State.categories = categorias;
 
         // Fetch Activities
-        const { data: actividades, error: errA } = await supabase.from('activities').select('id, category_id, name').order('name');
+        const { data: actividades, error: errA } = await supabaseClient.from('activities').select('id, category_id, name').order('name');
         if (errA) throw errA;
         State.activities = actividades;
 
@@ -357,11 +354,11 @@ async function guardarRegistro() {
 
     try {
         if (entryId) {
-             const { error } = await supabase.from('time_entries').update(payload).eq('id', entryId);
-             if (error) throw error;
+             const { error } = await supabaseClient.from('time_entries').update(payload).eq('id', entryId);
+
         } else {
-             const { error } = await supabase.from('time_entries').insert([payload]);
-             if (error) throw error;
+             const { error } = await supabaseClient.from('time_entries').insert([payload]);
+
         }
 
         // Reset form
@@ -391,7 +388,7 @@ async function cargarBitacora() {
             .order('date', { ascending: false })
             .limit(50); // limit for now
 
-        if (error) throw error;
+
         State.timeEntries = entries;
 
         renderizarTablaBitacora(entries);
@@ -518,7 +515,7 @@ async function cargarDashboardEquipo() {
         }
 
         const { data: teamEntries, error } = await query;
-        if (error) throw error;
+
 
         renderizarTablaAuditoria(teamEntries);
         renderizarKPIsEquipo(teamEntries);
@@ -641,7 +638,7 @@ async function aprobarRegistro(id) {
             .update({ status: 'approved' })
             .eq('id', id);
 
-        if (error) throw error;
+
 
         await cargarDashboardEquipo();
         alert('Registro aprobado exitosamente.');
@@ -674,7 +671,7 @@ document.getElementById('btnSaveQuery').addEventListener('click', async () => {
 
     try {
         // 1. Create audit query record
-        const { error: err1 } = await supabase.from('audit_queries').insert([{
+        const { error: err1 } = await supabaseClient.from('audit_queries').insert([{
             time_entry_id: entryId,
             author_id: State.profile.id,
             comment: text
@@ -752,8 +749,8 @@ async function cargarVistaCatalogos() {
         const nombre = document.getElementById('inputNombreProtocolo').value.trim();
         if(!nombre) return;
         try {
-            const { error } = await supabase.from('protocols').insert([{ name: nombre }]);
-            if (error) throw error;
+            const { error } = await supabaseClient.from('protocols').insert([{ name: nombre }]);
+
             document.getElementById('formNuevoProtocolo').reset();
             await cargarCatalogos(); // reload state
             renderizarListasCatalogos();
@@ -768,8 +765,8 @@ async function cargarVistaCatalogos() {
         const role = document.getElementById('selectRoleTarget').value || null;
         if(!nombre) return;
         try {
-            const { error } = await supabase.from('categories').insert([{ name: nombre, role_target: role }]);
-            if (error) throw error;
+            const { error } = await supabaseClient.from('categories').insert([{ name: nombre, role_target: role }]);
+
             document.getElementById('formNuevaCategoria').reset();
             await cargarCatalogos(); // reload state
             renderizarListasCatalogos();
