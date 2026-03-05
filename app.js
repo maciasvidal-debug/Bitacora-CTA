@@ -203,8 +203,8 @@ if (typeof module !== 'undefined' && module.exports) {
         getTiempoInicio: () => tiempoInicio,
         setCronometroEnMarcha: (v) => { cronometroEnMarcha = v; },
         actualizarTablaBitacora: () => { if (typeof actualizarTablaBitacora === 'function') actualizarTablaBitacora(); },
-        setListaActividades: (arr) => { listaActividades = arr; },
-        escaparCSV
+        actualizarEstadisticas: () => { if (typeof actualizarEstadisticas === 'function') actualizarEstadisticas(); },
+        setListaActividades: (arr) => { listaActividades = arr; }
     };
 }
 
@@ -489,7 +489,10 @@ function actualizarTablaBitacora() {
         // Necesitamos el index original para editar/eliminar correctamente
         const indexOriginal = listaActividades.findIndex(a => a.id === actividad.id);
         const fila = document.createElement('tr');
-        const nombreCategoria = nombresCategorias[actividad.categoria] || actividad.categoria;
+        const nombreCategoriaRaw = nombresCategorias[actividad.categoria] || actividad.categoria;
+        const nombreCategoria = escapeHTML(nombreCategoriaRaw);
+        const escProtocolo = escapeHTML(actividad.protocolo || "-");
+        const escDescripcion = escapeHTML(actividad.descripcion);
 
         // Sanitización para prevenir XSS
         const escProtocolo = escapeHTML(actividad.protocolo || "-");
@@ -499,7 +502,7 @@ function actualizarTablaBitacora() {
         fila.innerHTML = `
             <td>${actividad.fecha}</td>
             <td>${escProtocolo}</td>
-            <td>${escCategoria}</td>
+            <td>${nombreCategoria}</td>
             <td>${escDescripcion}</td>
             <td><strong>${actividad.horas}</strong></td>
             <td>
@@ -858,9 +861,9 @@ function actualizarEstadisticas() {
             if (protocoloTop && protocoloTop !== "Sin Protocolo") {
                 const protocoloInsight = document.createElement('div');
                 protocoloInsight.style.cssText = "background-color: #e8f5e9; color: #2e7d32; padding: 12px; border-radius: 6px; font-size: 14px; border-left: 4px solid #2e7d32;";
-            // Sanitización para prevenir XSS
-            const escProtocoloTop = escapeHTML(protocoloTop);
-            protocoloInsight.innerHTML = `<strong>💡 Foco Principal:</strong> El protocolo <em>${escProtocoloTop}</em> consumió la mayor parte de tus horas.`;
+                // Security Fix: Wrap user input with escapeHTML to prevent XSS
+                const escProtocoloTop = escapeHTML(protocoloTop);
+                protocoloInsight.innerHTML = `<strong>💡 Foco Principal:</strong> El protocolo <em>${escProtocoloTop}</em> consumió la mayor parte de tus horas.`;
                 insightsFragment.appendChild(protocoloInsight);
             }
 
@@ -906,7 +909,8 @@ function actualizarEstadisticas() {
         Object.keys(statsPorCategoria).sort((a, b) => statsPorCategoria[b] - statsPorCategoria[a]).forEach(cat => {
             const horas = statsPorCategoria[cat];
             const porcentaje = totalHoras > 0 ? (horas / totalHoras * 100).toFixed(0) : 0;
-            const nombre = nombresCategoriasBonitos[cat] || cat;
+            const nombreRaw = nombresCategoriasBonitos[cat] || cat;
+            const nombre = escapeHTML(nombreRaw);
 
             const bar = document.createElement('div');
             bar.style.marginBottom = "10px";
@@ -932,6 +936,7 @@ function actualizarEstadisticas() {
         Object.keys(statsPorProtocolo).sort((a, b) => statsPorProtocolo[b] - statsPorProtocolo[a]).forEach(prot => {
             const horas = statsPorProtocolo[prot];
             const porcentaje = totalHoras > 0 ? (horas / totalHoras * 100).toFixed(0) : 0;
+            const escProt = escapeHTML(prot);
 
             const bar = document.createElement('div');
             bar.style.marginBottom = "10px";
