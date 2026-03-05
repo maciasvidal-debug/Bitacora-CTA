@@ -486,8 +486,6 @@ function actualizarTablaBitacora() {
 
     const fragment = document.createDocumentFragment();
     actividadesFiltradas.slice().reverse().forEach((actividad) => {
-        // Necesitamos el index original para editar/eliminar correctamente
-        const indexOriginal = listaActividades.findIndex(a => a.id === actividad.id);
         const fila = document.createElement('tr');
         const nombreCategoriaRaw = nombresCategorias[actividad.categoria] || actividad.categoria;
 
@@ -505,8 +503,8 @@ function actualizarTablaBitacora() {
             <td>${escDescripcion}</td>
             <td><strong>${escHoras}</strong></td>
             <td>
-                <button aria-label="Editar actividad" onclick="cargarParaEditar(${actividad.id}, ${indexOriginal})" style="background:none; border:none; cursor:pointer;">✏️</button>
-                <button aria-label="Eliminar actividad" onclick="eliminarRegistro(${actividad.id}, ${indexOriginal})" style="background:none; border:none; cursor:pointer;">🗑️</button>
+                <button aria-label="Editar actividad" onclick="cargarParaEditar(${actividad.id})" style="background:none; border:none; cursor:pointer;">✏️</button>
+                <button aria-label="Eliminar actividad" onclick="eliminarRegistro(${actividad.id})" style="background:none; border:none; cursor:pointer;">🗑️</button>
             </td>
         `;
         fragment.appendChild(fila);
@@ -514,16 +512,21 @@ function actualizarTablaBitacora() {
     cuerpoTabla.appendChild(fragment);
 }
 
-window.eliminarRegistro = (id, index) => {
+window.eliminarRegistro = (id) => {
     if (confirm("¿Estás seguro de eliminar esta actividad?")) {
-        listaActividades.splice(index, 1);
+        const index = listaActividades.findIndex(a => a.id === id);
+        if (index > -1) {
+            listaActividades.splice(index, 1);
+        }
         eliminarDeDB(id);
         actualizarTablaBitacora();
         mostrarToast("🗑️ Registro eliminado.");
     }
 };
 
-window.cargarParaEditar = (id, index) => {
+window.cargarParaEditar = (id) => {
+    const index = listaActividades.findIndex(a => a.id === id);
+    if (index === -1) return;
     const act = listaActividades[index];
     document.getElementById('editId').value = id;
     document.getElementById('fecha').value = act.fecha;
