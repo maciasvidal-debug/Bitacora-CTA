@@ -469,15 +469,15 @@ function renderizarTablaBitacora(entries) {
             if(cat) categoriaName = escapeHTML(cat.name);
         }
 
-        const tiempoFmt = `${entry.hours}h ${entry.minutes}m`;
+        const tiempoFmt = `${escapeHTML(entry.hours)}h ${escapeHTML(entry.minutes)}m`;
 
-        const spanStatus = `<span class="status-badge status-${entry.status}">${escapeHTML(entry.status)}</span>`;
+        const spanStatus = `<span class="status-badge status-${escapeHTML(entry.status)}">${escapeHTML(entry.status)}</span>`;
 
         // Actions
         let accionesHtml = '';
         if (entry.status === 'pending' || entry.status === 'queried') {
              accionesHtml = `
-                <button class="btn-secundario btn-accion" onclick="editarRegistro('${entry.id}')">Editar</button>
+                <button class="btn-secundario btn-accion btn-editar" data-id="${escapeHTML(entry.id)}">Editar</button>
              `;
         } else {
              accionesHtml = `<span style="font-size: 0.8em; color: gray;">Bloqueado</span>`;
@@ -496,6 +496,13 @@ function renderizarTablaBitacora(entries) {
     });
 
     tbody.appendChild(fragment);
+
+    document.querySelectorAll('.btn-editar').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const id = e.target.getAttribute('data-id') || e.target.closest('.btn-editar').getAttribute('data-id');
+            editarRegistro(id);
+        });
+    });
 }
 
 function editarRegistro(id) {
@@ -566,7 +573,7 @@ async function cargarDashboardEquipo() {
         // Fetch profiles in the same department (handled securely via RLS)
         const { data: teamMembers, error: teamError } = await supabaseClient
             .from('profiles')
-            .select('id, email, first_name, last_name, role, department')
+            .select('id, first_name, last_name, role, department')
             .order('role', { ascending: true });
 
         if (teamError) throw teamError;
@@ -576,7 +583,7 @@ async function cargarDashboardEquipo() {
             .from('time_entries')
             .select(`
                 id, date, total_hours, status, notes, user_id,
-                profiles ( email, first_name, last_name, role ),
+                profiles (  first_name, last_name, role ),
                 activities ( name ),
                 categories ( name ),
                 protocols ( name, code )
@@ -690,7 +697,7 @@ async function cargarDashboardEquipo() {
         entries.forEach(e => {
             if (e.user_id === State.profile.id) return; // don't show own entries in audit
 
-            const emailDisplay = escapeHTML(e.profiles?.email || 'Desconocido');
+            const nombreDisplay = escapeHTML((e.profiles?.first_name && e.profiles?.last_name) ? (e.profiles.first_name + ' ' + e.profiles.last_name) : 'Desconocido');
             const actividadDisplay = escapeHTML(e.activities?.name || 'Desconocido');
 
             let btnActions = '';
@@ -703,7 +710,7 @@ async function cargarDashboardEquipo() {
 
             cuerpoAuditoria.innerHTML += `
                 <tr>
-                    <td>${emailDisplay}</td>
+                    <td>${nombreDisplay}</td>
                     <td>${escapeHTML(e.date)}</td>
                     <td>${actividadDisplay}</td>
                     <td>${escapeHTML(e.total_hours)}</td>
@@ -747,14 +754,14 @@ function renderizarTablaAuditoria(entries) {
         const nombre = entry.profiles ? `${escapeHTML(entry.profiles.first_name)} ${escapeHTML(entry.profiles.last_name)}` : 'Usuario Desconocido';
         const fecha = escapeHTML(entry.date);
         const actividad = entry.activities ? escapeHTML(entry.activities.name) : 'N/A';
-        const tiempo = `${entry.total_hours} h`;
-        const spanStatus = `<span class="status-badge status-${entry.status}">${escapeHTML(entry.status)}</span>`;
+        const tiempo = `${escapeHTML(entry.total_hours)} h`;
+        const spanStatus = `<span class="status-badge status-${escapeHTML(entry.status)}">${escapeHTML(entry.status)}</span>`;
 
         let acciones = '';
         if (entry.status === 'pending') {
             acciones = `
-                <button class="btn-principal btn-accion" onclick="aprobarRegistro('${entry.id}')">Aprobar</button>
-                <button class="btn-peligro btn-accion" onclick="abrirModalQuery('${entry.id}')">Query</button>
+                <button class="btn-principal btn-accion btn-aprobar-auditoria" data-id="${escapeHTML(entry.id)}">Aprobar</button>
+                <button class="btn-peligro btn-accion btn-rechazar-auditoria" data-id="${escapeHTML(entry.id)}">Query</button>
             `;
         } else if (entry.status === 'queried') {
             acciones = `<span style="font-size: 0.8em; color: var(--error-color);">Esperando corrección</span>`;
@@ -774,6 +781,20 @@ function renderizarTablaAuditoria(entries) {
     });
 
     tbody.appendChild(fragment);
+
+    document.querySelectorAll('.btn-aprobar-auditoria').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const id = e.target.getAttribute('data-id') || e.target.closest('.btn-aprobar-auditoria').getAttribute('data-id');
+            aprobarRegistro(id);
+        });
+    });
+
+    document.querySelectorAll('.btn-rechazar-auditoria').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const id = e.target.getAttribute('data-id') || e.target.closest('.btn-rechazar-auditoria').getAttribute('data-id');
+            abrirModalQuery(id);
+        });
+    });
 }
 
 function renderizarKPIsEquipo(entries) {
