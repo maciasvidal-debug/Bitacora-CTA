@@ -9,6 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>📈</text></svg>">
     <title>SiteFlow | Clinical Activity Logger</title>
 
     <!-- Supabase JS Client -->
@@ -72,10 +73,10 @@
                     <img src="siteflow-logo.png" alt="SiteFlow Logo" class="logo-img" id="logoApp">
                 </div>
                 <div class="user-info">
-                    <span id="userEmailDisplay"></span>
+                    <span id="userNameDisplay"></span>
                     <div style="display: flex; gap: 0.5rem; align-items: center;">
                         <button id="btnTema" class="btn-icon" aria-label="Cambiar tema de la aplicación" title="Cambiar tema">💻</button>
-                        <button id="btnCerrarSesion" class="btn-secundario">Salir</button>
+                        <button id="btnCerrarSesion" class="btn-icon btn-logout" aria-label="Cerrar sesión" title="Cerrar sesión">🚪</button>
                     </div>
                 </div>
             </div>
@@ -84,6 +85,25 @@
             <!-- Navigation specifically for polymorphic roles -->
 
         </header>
+        <!-- Bottom Navigation Bar (Mobile) / Top Navigation (Desktop) -->
+        <nav id="navMenu" class="bottom-nav" style="display: none;">
+            <button class="nav-btn active" data-target="vistaRegistro">
+                <span class="nav-icon">📝</span>
+                <span class="nav-text">Registro</span>
+            </button>
+            <button class="nav-btn" data-target="vistaEstadisticas" id="btnNavEstadisticas" style="display: none;">
+                <span class="nav-icon">📈</span>
+                <span class="nav-text">Stats</span>
+            </button>
+            <button class="nav-btn" data-target="vistaDashboard" id="btnNavDashboard" style="display: none;">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">Equipo</span>
+            </button>
+            <button class="nav-btn" data-target="vistaCatalogos" id="btnNavCatalogos" style="display: none;">
+                <span class="nav-icon">📁</span>
+                <span class="nav-text">Gestión</span>
+            </button>
+        </nav>
 
         <main>
             <!-- View: Registration (CRA, CRC, Data Entry, Regulatory Affairs, Managers, Admins) -->
@@ -222,8 +242,8 @@
 
                     <div style="display: flex; gap: 1rem; align-items: center;">
                         <!-- Data Bridge (Universal) -->
-                        <button id="btnExportCSV" class="btn-secundario" title="Exportar para SPSS/STATA">📥 CSV</button>
-                        <button id="btnExportJSON" class="btn-secundario" title="Exportar para Power BI">📊 JSON</button>
+                        <button id="btnExportCSV" class="btn-secundario" title="Exportar para SPSS/STATA">📥 Descargar Excel</button>
+                        <button id="btnExportJSON" class="btn-secundario" title="Exportar para Power BI">📊 Datos para BI</button>
 
                         <!-- H2H Selector (Solo Managers) -->
                         <div id="h2hSelectorContainer" style="display: none;">
@@ -403,25 +423,7 @@
 
     <script src="app.js"></script>
 
-    <!-- Bottom Navigation Bar (Mobile) -->
-    <nav id="navMenu" class="bottom-nav" style="display: none;">
-        <button class="nav-btn active" data-target="vistaRegistro">
-            <span class="nav-icon">📝</span>
-            <span class="nav-text">Registro</span>
-        </button>
-        <button class="nav-btn" data-target="vistaEstadisticas" id="btnNavEstadisticas" style="display: none;">
-            <span class="nav-icon">📈</span>
-            <span class="nav-text">Stats</span>
-        </button>
-        <button class="nav-btn" data-target="vistaDashboard" id="btnNavDashboard" style="display: none;">
-            <span class="nav-icon">📊</span>
-            <span class="nav-text">Equipo</span>
-        </button>
-        <button class="nav-btn" data-target="vistaCatalogos" id="btnNavCatalogos" style="display: none;">
-            <span class="nav-icon">📁</span>
-            <span class="nav-text">Gestión</span>
-        </button>
-    </nav>
+
 
 </body>
 </html>

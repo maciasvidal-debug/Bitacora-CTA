@@ -1,4 +1,17 @@
 
+// Global Error Handler
+window.addEventListener('error', function(event) {
+    event.preventDefault();
+    console.clear();
+    mostrarToast('Ha ocurrido un error inesperado.', 'error');
+});
+
+window.addEventListener('unhandledrejection', function(event) {
+    event.preventDefault();
+    console.clear();
+    mostrarToast('Ha ocurrido un error inesperado.', 'error');
+});
+
 // --- PWA Service Worker Registration & Update Flow ---
 let nuevoWorker;
 
@@ -112,7 +125,7 @@ if (supabaseClient) supabaseClient.auth.onAuthStateChange(async (event, session)
 
 async function initializeUser(user) {
     State.user = user;
-    document.getElementById('userEmailDisplay').textContent = user.email;
+
 
     try {
         // Fetch user profile to get role
@@ -126,6 +139,7 @@ async function initializeUser(user) {
         if (error) throw error;
         if (!profile) throw new Error('No se encontró el perfil en la base de datos.');
         State.profile = profile;
+        document.getElementById('userNameDisplay').textContent = `${profile.first_name} ${profile.last_name}`;
 
         mostrarAppPrincipal();
         configurarUIporRol(profile.role);
@@ -1398,4 +1412,15 @@ if (typeof module !== 'undefined' && module.exports) {
         mostrarToast,
         cambiarVista
     };
-}
+}// Global Error Handler
+window.addEventListener('error', function(event) {
+    event.preventDefault();
+    console.clear();
+    mostrarToast('Ha ocurrido un error inesperado.', 'error');
+});
+
+window.addEventListener('unhandledrejection', function(event) {
+    event.preventDefault();
+    console.clear();
+    mostrarToast('Error de conexión o de red.', 'error');
+});
