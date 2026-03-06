@@ -96,12 +96,14 @@ async function checkSession() {
         mostrarLogin();
         return;
     }
-
 }
 
 if (supabaseClient) supabaseClient.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN') {
-        await initializeUser(session.user);
+        // Only initialize if not already initialized
+        if (!State.user || State.user.id !== session.user.id) {
+            await initializeUser(session.user);
+        }
     } else if (event === 'SIGNED_OUT') {
         State.user = null;
         State.profile = null;
@@ -135,7 +137,8 @@ async function initializeUser(user) {
 
     } catch (err) {
         console.error("Error initializing user profile:", err.message);
-        // Fallback or error state
+        alert("Error de sesión: " + err.message);
+        mostrarLogin();
     }
 }
 
