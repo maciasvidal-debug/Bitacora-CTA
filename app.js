@@ -142,6 +142,15 @@ async function initializeUser(user) {
     }
 }
 
+function mostrarToast(mensaje) {
+    const contenedor = document.getElementById("toastContainer");
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    toast.textContent = mensaje;
+    contenedor.appendChild(toast);
+    setTimeout(() => { toast.classList.add("oculto"); setTimeout(() => toast.remove(), 500); }, 2500);
+}
+
 // --- UI & Polymorphism ---
 function mostrarLogin() {
     document.getElementById('pantallaLogin').style.display = 'block';
@@ -971,6 +980,7 @@ if (typeof module !== 'undefined' && module.exports) {
         crearOpcion,
         actualizarEstadisticas,
         State, // export state for testing if needed
-        renderizarTablaBitacora
+        renderizarTablaBitacora,
+        mostrarToast
     };
 }
